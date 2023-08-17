@@ -24,7 +24,6 @@ from config import opt
 class yoloDataset(data.Dataset):
     image_size = 640
     def __init__(self,root,train,transform):
-        print('data init')
         self.root=root
         self.train = train
         self.transform=transform
@@ -51,12 +50,12 @@ class yoloDataset(data.Dataset):
             label=[]
             for i in range(num_boxes):
                 bb = splited[i+1].split(',')
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
                 x = float(bb[0])
                 y = float(bb[1])
                 x2 = float(bb[2])
                 y2 = float(bb[3])
-                c = splited[i][4]
+                c = bb[4]
                 box.append([x,y,x2,y2])
                 label.append(int(c)+1)
             self.boxes.append(torch.Tensor(box))
@@ -65,7 +64,8 @@ class yoloDataset(data.Dataset):
 
     def __getitem__(self,idx):
         fname = self.fnames[idx]
-        img = cv2.imread(os.path.join(self.root, fname))
+        # import pdb; pdb.set_trace()
+        img = cv2.imread(os.path.join(self.root, fname[1:]))
         boxes = self.boxes[idx].clone()
         labels = self.labels[idx].clone()
 

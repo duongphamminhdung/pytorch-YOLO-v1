@@ -10,7 +10,7 @@ class Config:
     root = '/root/pytorch-YOLO-v1/setup/'
     min_size = 600  # image resize
     max_size = 1000 # image resize
-    num_workers = 4
+    num_workers = 0
     test_num_workers = 4
     batch_size = 8
 

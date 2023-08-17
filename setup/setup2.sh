@@ -16,6 +16,6 @@ conda install pytorch==1.5.1 torchvision==0.6.1 cudatoolkit=10.2 -c pytorch
 
 # install other dependancy
 echo pip install scikit-image tqdm ipdb matplotlib torchnet
-pip install  scikit-image tqdm  ipdb matplotlib torchnet opencv-python
+pip install  scikit-image tqdm  ipdb matplotlib torchnet opencv-python torchsummary
 
 echo Done setting up

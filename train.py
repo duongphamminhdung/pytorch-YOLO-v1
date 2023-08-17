@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchvision import models
 from torch.autograd import Variable
+from pytorchsummary import summary
 
 from resnet_yolo import resnet50
 from yoloLoss import yoloLoss
@@ -17,8 +18,11 @@ use_gpu = torch.cuda.is_available()
 
 num_epochs = opt.epoch
 batch_size = opt.batch_size
+learning_rate = opt.lr_
+test_num_workers = opt.test_num_workers
+num_workers = opt.num_workers
+
 net = resnet50()
-print(net)
 print('model construct complete')
 
 if not opt.load_model_path:
@@ -33,7 +37,8 @@ if not opt.load_model_path:
 else:
     net.load_state_dict(torch.load(opt.load_model_path))
     print('loaded best model')
-
+summary(model=net, input_size=(3, 640, 640))
+# import pdb; pdb.set_trace()
 print('cuda', torch.cuda.current_device(), torch.cuda.device_count())
 
 criterion = yoloLoss(7, 2, 5, 0.5)
@@ -47,31 +52,26 @@ params=[]
 params_dict = dict(net.named_parameters())
 for key,value in params_dict.items():
     if key.startswith('features'):
-        params += [{'params':[value],'lr':opt.lr_*1}]
+        params += [{'params':[value],'lr':learning_rate*1}]
     else:
-        params += [{'params':[value],'lr':opt.lr_}]
-optimizer = torch.optim.SGD(params, lr=opt.lr_, momentum=opt.momentum, weight_decay=opt.weight_decay)
+        params += [{'params':[value],'lr':learning_rate}]
+optimizer = torch.optim.SGD(params, lr=learning_rate, momentum=opt.momentum, weight_decay=opt.weight_decay)
 # optimizer = torch.optim.Adam(net.parameters(),lr=learning_rate,weight_decay=1e-4)
 
 train_dataset = yoloDataset(root=opt.root,train=True,transform = [transforms.ToTensor()] )
-train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
+train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=num_workers)
 
 test_dataset = yoloDataset(root=opt.root, train=False,transform = [transforms.ToTensor()] )
-test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=False,num_workers=4)
+test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=False,num_workers=test_num_workers)
 
 print('the dataset has %d images' % (len(train_dataset)))
 print('the batch_size is %d' % (batch_size))
 logfile = open('log.txt', 'w')
-import ipdb; ipdb.set_trace()
+# import pdb; pdb.set_trace()
 num_iter = 0
 best_test_loss = np.inf
-
 for epoch in range(num_epochs):
     net.train()
-    if epoch == 20:
-        learning_rate=0.0015
-    if epoch == 40:
-        learning_rate=0.001
     # optimizer = torch.optim.SGD(net.parameters(),lr=learning_rate*0.1,momentum=0.9,weight_decay=1e-4)
     for param_group in optimizer.param_groups:
         param_group['lr'] = learning_rate

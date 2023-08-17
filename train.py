@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -7,69 +7,37 @@ import torchvision.transforms as transforms
 from torchvision import models
 from torch.autograd import Variable
 
-from net import vgg16, vgg16_bn
-from resnet_yolo import resnet50, resnet18
+from resnet_yolo import resnet50
 from yoloLoss import yoloLoss
 from dataset import yoloDataset
+from config import opt
 
-from visualize import Visualizer
-import numpy as np
 
 use_gpu = torch.cuda.is_available()
 
-file_root = '/home/xzh/data/VOCdevkit/VOC2012/allimgs/'
-learning_rate = 0.001
-num_epochs = 50
-batch_size = 24
-use_resnet = True
-if use_resnet:
-    net = resnet50()
-else:
-    net = vgg16_bn()
-# net.classifier = nn.Sequential(
-#             nn.Linear(512 * 7 * 7, 4096),
-#             nn.ReLU(True),
-#             nn.Dropout(),
-#             #nn.Linear(4096, 4096),
-#             #nn.ReLU(True),
-#             #nn.Dropout(),
-#             nn.Linear(4096, 1470),
-#         )
-#net = resnet18(pretrained=True)
-#net.fc = nn.Linear(512,1470)
-# initial Linear
-# for m in net.modules():
-#     if isinstance(m, nn.Linear):
-#         m.weight.data.normal_(0, 0.01)
-#         m.bias.data.zero_()
+num_epochs = opt.epoch
+batch_size = opt.batch_size
+net = resnet50()
 print(net)
-#net.load_state_dict(torch.load('yolo.pth'))
-print('load pre-trined model')
-if use_resnet:
+print('model construct complete')
+
+if not opt.load_model_path:
     resnet = models.resnet50(pretrained=True)
     new_state_dict = resnet.state_dict()
     dd = net.state_dict()
     for k in new_state_dict.keys():
-        print(k)
         if k in dd.keys() and not k.startswith('fc'):
-            print('yes')
             dd[k] = new_state_dict[k]
     net.load_state_dict(dd)
+    print('create model from scratch')
 else:
-    vgg = models.vgg16_bn(pretrained=True)
-    new_state_dict = vgg.state_dict()
-    dd = net.state_dict()
-    for k in new_state_dict.keys():
-        print(k)
-        if k in dd.keys() and k.startswith('features'):
-            print('yes')
-            dd[k] = new_state_dict[k]
-    net.load_state_dict(dd)
-if False:
-    net.load_state_dict(torch.load('best.pth'))
+    net.load_state_dict(torch.load(opt.load_model_path))
+    print('loaded best model')
+
 print('cuda', torch.cuda.current_device(), torch.cuda.device_count())
 
-criterion = yoloLoss(7,2,5,0.5)
+criterion = yoloLoss(7, 2, 5, 0.5)
+
 if use_gpu:
     net.cuda()
 
@@ -79,38 +47,31 @@ params=[]
 params_dict = dict(net.named_parameters())
 for key,value in params_dict.items():
     if key.startswith('features'):
-        params += [{'params':[value],'lr':learning_rate*1}]
+        params += [{'params':[value],'lr':opt.lr_*1}]
     else:
-        params += [{'params':[value],'lr':learning_rate}]
-optimizer = torch.optim.SGD(params, lr=learning_rate, momentum=0.9, weight_decay=5e-4)
+        params += [{'params':[value],'lr':opt.lr_}]
+optimizer = torch.optim.SGD(params, lr=opt.lr_, momentum=opt.momentum, weight_decay=opt.weight_decay)
 # optimizer = torch.optim.Adam(net.parameters(),lr=learning_rate,weight_decay=1e-4)
 
-# train_dataset = yoloDataset(root=file_root,list_file=['voc12_trainval.txt','voc07_trainval.txt'],train=True,transform = [transforms.ToTensor()] )
-train_dataset = yoloDataset(root=file_root,list_file=['voc2012.txt','voc2007.txt'],train=True,transform = [transforms.ToTensor()] )
+train_dataset = yoloDataset(root=opt.root,train=True,transform = [transforms.ToTensor()] )
 train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
-# test_dataset = yoloDataset(root=file_root,list_file='voc07_test.txt',train=False,transform = [transforms.ToTensor()] )
-test_dataset = yoloDataset(root=file_root,list_file='voc2007test.txt',train=False,transform = [transforms.ToTensor()] )
+
+test_dataset = yoloDataset(root=opt.root, train=False,transform = [transforms.ToTensor()] )
 test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=False,num_workers=4)
+
 print('the dataset has %d images' % (len(train_dataset)))
 print('the batch_size is %d' % (batch_size))
 logfile = open('log.txt', 'w')
-
+import ipdb; ipdb.set_trace()
 num_iter = 0
-vis = Visualizer(env='xiong')
 best_test_loss = np.inf
 
 for epoch in range(num_epochs):
     net.train()
-    # if epoch == 1:
-    #     learning_rate = 0.0005
-    # if epoch == 2:
-    #     learning_rate = 0.00075
-    # if epoch == 3:
-    #     learning_rate = 0.001
-    if epoch == 30:
-        learning_rate=0.0001
+    if epoch == 20:
+        learning_rate=0.0015
     if epoch == 40:
-        learning_rate=0.00001
+        learning_rate=0.001
     # optimizer = torch.optim.SGD(net.parameters(),lr=learning_rate*0.1,momentum=0.9,weight_decay=1e-4)
     for param_group in optimizer.param_groups:
         param_group['lr'] = learning_rate

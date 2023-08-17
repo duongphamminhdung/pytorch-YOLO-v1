@@ -8,14 +8,14 @@ echo installing data
 # tar xvf VOCtest_06-Nov-2007.tar
 # tar xvf VOCdevkit_08-Jun-2007.tar
 pip install gdown
-gdown https://drive.google.com/uc?id=14wEFhlMSI5zhgkhn5HRodSH2aBDZq949
-unzip VOCdevkit.zip
+gdown https://drive.google.com/uc?id=1UjjW8EQB9u3UjKpLeEdWF7behJ2hQ3yj
+unzip coconut-yolo.zip
 # install pytorch
 echo conda install pytorch==1.5.1 torchvision==0.6.1 cudatoolkit=10.2 -c pytorch
 conda install pytorch==1.5.1 torchvision==0.6.1 cudatoolkit=10.2 -c pytorch
 
 # install other dependancy
 echo pip install scikit-image tqdm ipdb matplotlib torchnet
-pip install  scikit-image tqdm  ipdb matplotlib torchnet
+pip install  scikit-image tqdm  ipdb matplotlib torchnet opencv-python
 
 echo Done setting up

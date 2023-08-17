@@ -19,9 +19,11 @@ import torchvision.transforms as transforms
 import cv2
 import matplotlib.pyplot as plt
 
+from config import opt
+
 class yoloDataset(data.Dataset):
-    image_size = 448
-    def __init__(self,root,list_file,train,transform):
+    image_size = 640
+    def __init__(self,root,train,transform):
         print('data init')
         self.root=root
         self.train = train
@@ -31,28 +33,30 @@ class yoloDataset(data.Dataset):
         self.labels = []
         self.mean = (123,117,104)#RGB
 
-        if isinstance(list_file, list):
-            # Cat multiple list files together.
-            # This is especially useful for voc07/voc12 combination.
-            tmp_file = '/tmp/listfile.txt'
-            os.system('cat %s > %s' % (' '.join(list_file), tmp_file))
-            list_file = tmp_file
-
-        with open(list_file) as f:
+        # if isinstance(list_file, list):
+        #     # Cat multiple list files together.
+        #     # This is especially useful for voc07/voc12 combination.
+        #     tmp_file = '/tmp/listfile.txt'
+        #     os.system('cat %s > %s' % (' '.join(list_file), tmp_file))
+        #     list_file = tmp_file
+        
+        with open(os.path.join(opt.root, 'anno.txt')) as f:
             lines  = f.readlines()
 
         for line in lines:
             splited = line.strip().split()
             self.fnames.append(splited[0])
-            num_boxes = (len(splited) - 1) // 5
+            num_boxes = (len(splited) - 1)
             box=[]
             label=[]
             for i in range(num_boxes):
-                x = float(splited[1+5*i])
-                y = float(splited[2+5*i])
-                x2 = float(splited[3+5*i])
-                y2 = float(splited[4+5*i])
-                c = splited[5+5*i]
+                bb = splited[i+1].split(',')
+                import pdb; pdb.set_trace()
+                x = float(bb[0])
+                y = float(bb[1])
+                x2 = float(bb[2])
+                y2 = float(bb[3])
+                c = splited[i][4]
                 box.append([x,y,x2,y2])
                 label.append(int(c)+1)
             self.boxes.append(torch.Tensor(box))
@@ -61,7 +65,7 @@ class yoloDataset(data.Dataset):
 
     def __getitem__(self,idx):
         fname = self.fnames[idx]
-        img = cv2.imread(os.path.join(self.root+fname))
+        img = cv2.imread(os.path.join(self.root, fname))
         boxes = self.boxes[idx].clone()
         labels = self.labels[idx].clone()
 

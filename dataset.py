@@ -110,7 +110,8 @@ class yoloDataset(data.Dataset):
         labels (tensor) [...]
         return 7x7x30
         '''
-        grid_num = 14
+        # grid_num = 14
+        grid_num = 20
         target = torch.zeros((grid_num,grid_num,30))
         cell_size = 1./grid_num
         wh = boxes[:,2:]-boxes[:,:2]

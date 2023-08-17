@@ -52,6 +52,7 @@ class yoloLoss(nn.Module):
         pred_tensor: (tensor) size(batchsize,S,S,Bx5+20=30) [x,y,w,h,c]
         target_tensor: (tensor) size(batchsize,S,S,30)
         '''
+        # import pdb; pdb.set_trace()
         N = pred_tensor.size()[0]
         coo_mask = target_tensor[:,:,:,4] > 0
         noo_mask = target_tensor[:,:,:,4] == 0
@@ -122,7 +123,7 @@ class yoloLoss(nn.Module):
 
         #3.class loss
         class_loss = F.mse_loss(class_pred,class_target,size_average=False)
-
+        # import pdb; pdb.set_trace()
         return (self.l_coord*loc_loss + 2*contain_loss + not_contain_loss + self.l_noobj*nooobj_loss + class_loss)/N
 
 

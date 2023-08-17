@@ -89,16 +89,16 @@ for epoch in range(num_epochs):
         
         pred = net(images)
         loss = criterion(pred,target)
-        total_loss += loss.data[0]
+        total_loss += loss.data
+        # total_loss += loss.data[0]
         
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         if (i+1) % 5 == 0:
             print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f, average_loss: %.4f' 
-            %(epoch+1, num_epochs, i+1, len(train_loader), loss.data[0], total_loss / (i+1)))
+            %(epoch+1, num_epochs, i+1, len(train_loader), loss.data, total_loss / (i+1)))
             num_iter += 1
-            vis.plot_train_val(loss_train=total_loss/(i+1))
 
     #validation
     validation_loss = 0.0
@@ -111,9 +111,9 @@ for epoch in range(num_epochs):
         
         pred = net(images)
         loss = criterion(pred,target)
-        validation_loss += loss.data[0]
+        # validation_loss += loss.data[0]
+        validation_loss += loss.data
     validation_loss /= len(test_loader)
-    vis.plot_train_val(loss_val=validation_loss)
     
     if best_test_loss > validation_loss:
         best_test_loss = validation_loss

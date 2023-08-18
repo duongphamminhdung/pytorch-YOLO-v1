@@ -39,8 +39,14 @@ class yoloDataset(data.Dataset):
         #     os.system('cat %s > %s' % (' '.join(list_file), tmp_file))
         #     list_file = tmp_file
         
-        with open(os.path.join(opt.root, 'anno.txt')) as f:
-            lines  = f.readlines()
+        # with open(os.path.join(opt.root, 'anno.txt')) as f:
+        #     lines  = f.readlines()
+        if train:
+            with open('/root/pytorch-YOLO-v1/setup/train.txt') as train:
+                lines = train.readlines()
+        else:
+            with open('/root/pytorch-YOLO-v1/setup/valid.txt') as valid:
+                lines = valid.readlines()
 
         for line in lines:
             splited = line.strip().split()

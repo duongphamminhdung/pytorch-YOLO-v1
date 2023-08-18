@@ -1,3 +1,8 @@
+import warnings
+warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", message="deprecated")
+import shutup; shutup.please()
+
 import os
 import numpy as np
 import torch
@@ -7,6 +12,7 @@ import torchvision.transforms as transforms
 from torchvision import models
 from torch.autograd import Variable
 from pytorchsummary import summary
+from tqdm import tqdm
 
 from resnet_yolo import resnet50
 from yoloLoss import yoloLoss
@@ -80,8 +86,8 @@ for epoch in range(num_epochs):
     print('Learning Rate for this epoch: {}'.format(learning_rate))
     
     total_loss = 0.
-    
-    for i,(images,target) in enumerate(train_loader):
+    print("Training")
+    for i,(images,target) in tqdm(enumerate(train_loader), total=len(train_loader)):
         images = Variable(images)
         target = Variable(target)
         if use_gpu:
@@ -95,15 +101,16 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if (i+1) % 5 == 0:
-            print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f, average_loss: %.4f' 
-            %(epoch+1, num_epochs, i+1, len(train_loader), loss.data, total_loss / (i+1)))
-            num_iter += 1
-
+        # if (i+1) % 5 == 0:
+        #     print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f, average_loss: %.4f' 
+        #     %(epoch+1, num_epochs, i+1, len(train_loader), loss.data, total_loss / (i+1)))
+        #     num_iter += 1
+    print("Training loss:", total_loss)
     #validation
     validation_loss = 0.0
     net.eval()
-    for i,(images,target) in enumerate(test_loader):
+    print("Evaluating")
+    for i,(images,target) in tqdm(enumerate(test_loader), total=len(test_loader)):
         images = Variable(images,volatile=True)
         target = Variable(target,volatile=True)
         if use_gpu:
@@ -113,14 +120,14 @@ for epoch in range(num_epochs):
         loss = criterion(pred,target)
         # validation_loss += loss.data[0]
         validation_loss += loss.data
-    validation_loss /= len(test_loader)
+    # validation_loss /= len(test_loader)
     
     if best_test_loss > validation_loss:
         best_test_loss = validation_loss
-        print('get best test loss %.5f' % best_test_loss)
-        torch.save(net.state_dict(),'best.pth')
+        print('Lowest loss %.5f' % best_test_loss)
+        torch.save(net.state_dict(),'best_model.pth')
+        print("Saved best model")
     logfile.writelines(str(epoch) + '\t' + str(validation_loss) + '\n')  
     logfile.flush()      
-    torch.save(net.state_dict(),'yolo.pth')
-    
+    torch.save(net.state_dict(),'latest_model.pth')    
 

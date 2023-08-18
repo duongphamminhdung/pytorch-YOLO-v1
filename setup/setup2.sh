@@ -8,7 +8,7 @@ echo installing data
 # tar xvf VOCtest_06-Nov-2007.tar
 # tar xvf VOCdevkit_08-Jun-2007.tar
 pip install gdown
-gdown https://drive.google.com/uc?id=1UjjW8EQB9u3UjKpLeEdWF7behJ2hQ3yj
+gdown https://drive.google.com/uc?id=1HEIi_eo7IwCPbmAI_hwR4NlKKY7rUp3G
 unzip coconut-yolo.zip
 
 conda config --append channels pytorch

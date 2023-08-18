@@ -30,18 +30,17 @@ def nms(bboxes,scores,threshold=0.5):
 
     _,order = scores.sort(0,descending=True)
     keep = []
+    # import pdb; pdb.set_trace()
     while order.numel() > 0:
-        i = order[0]
-        keep.append(i)
-
         if order.numel() == 1:
             break
-
+        i = order[0]
+        keep.append(i)
+        
         xx1 = x1[order[1:]].clamp(min=x1[i])
         yy1 = y1[order[1:]].clamp(min=y1[i])
         xx2 = x2[order[1:]].clamp(max=x2[i])
         yy2 = y2[order[1:]].clamp(max=y2[i])
-
         w = (xx2-xx1).clamp(min=0)
         h = (yy2-yy1).clamp(min=0)
         inter = w*h
@@ -148,19 +147,21 @@ if __name__ == '__main__':
     
     model.eval()
     model.cuda()
-    image_name = 'JPEGImages/0010.png'
-    # import pdb; pdb.set_trace()
-    image = cv2.imread(os.path.join(opt.root, image_name))
-    print('predicting...')
-    result = predict_gpu(model,image)
-    
-    for left_up,right_bottom,class_name,_,prob in result:
-        cv2.rectangle(image,left_up,right_bottom,(255, 0, 0
-                                                  ),2)
-        # label = class_name+str(round(prob,2))
-        # text_size, baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)
-        # p1 = (left_up[0], left_up[1]- text_size[1])
-        # cv2.rectangle(image, (p1[0] - 2//2, p1[1] - 2 - baseline), (p1[0] + text_size[0], p1[1] + text_size[1]), color, -1)
+    for image_name in os.listdir(os.path.join(opt.root, 'JPEGImages')):
+        print(image_name)
+        # image_name = 'JPEGImages/0010.png'
+        # import pdb; pdb.set_trace()
+        image = cv2.imread(os.path.join(opt.root, 'JPEGImages', image_name))
+        print('predicting...')
+        result = predict_gpu(model,image)
+        
+        for left_up,right_bottom,class_name,_,prob in result:
+            cv2.rectangle(image,left_up,right_bottom,(255, 0, 0
+                                                    ),2)
+            # label = class_name+str(round(prob,2))
+            # text_size, baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)
+            # p1 = (left_up[0], left_up[1]- text_size[1])
+            # cv2.rectangle(image, (p1[0] - 2//2, p1[1] - 2 - baseline), (p1[0] + text_size[0], p1[1] + text_size[1]), color, -1)
 
-    cv2.imwrite('/root/pytorch-YOLO-v1/outputs/test_res/result.png',image)
+        cv2.imwrite('/root/pytorch-YOLO-v1/outputs/test_res/result_{}'.format(image_name),image)
     print('Complete!')

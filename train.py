@@ -1,7 +1,6 @@
 import warnings
 warnings.filterwarnings("ignore")
 warnings.filterwarnings("ignore", message="deprecated")
-import shutup; shutup.please()
 
 import os
 import numpy as np
@@ -31,7 +30,7 @@ num_workers = opt.num_workers
 net = resnet50()
 print('model construct complete')
 
-if not opt.load_model_path:
+if not os.path.isfile(opt.load_model_path):
     resnet = models.resnet50(pretrained=True)
     new_state_dict = resnet.state_dict()
     dd = net.state_dict()
@@ -125,9 +124,10 @@ for epoch in range(num_epochs):
     if best_test_loss > validation_loss:
         best_test_loss = validation_loss
         print('Lowest loss %.5f' % best_test_loss)
-        torch.save(net.state_dict(),'best_model.pth')
+        # print('Accuracy %.5f' % accuracy)
+        torch.save(net.state_dict(),'outputs/best_model_%.5f' % (best_test_loss))
         print("Saved best model")
     logfile.writelines(str(epoch) + '\t' + str(validation_loss) + '\n')  
     logfile.flush()      
-    torch.save(net.state_dict(),'latest_model.pth')    
+    torch.save(net.state_dict(),'outputs/latest_model.pth')    
 

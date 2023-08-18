@@ -20,7 +20,7 @@ class Config:
     momentum = 0.9
     weight_decay = 5e-4
     # training
-    epoch = 40
+    epoch = 100
 
     # debug
     debug_file = '/tmp/debugf'

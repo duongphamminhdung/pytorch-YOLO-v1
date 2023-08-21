@@ -123,7 +123,7 @@ for epoch in range(num_epochs):
     logfile.writelines(str(epoch) + '\t' + str(validation_loss) + '\n')  
     logfile.flush()      
     if not os.path.isdir('outputs'):
-        os.mkdir("outupts")
+        os.mkdir("outputs")
     torch.save(net.state_dict(),'outputs/latest_model.pth')
     print(validation_loss) 
     if best_test_loss > validation_loss:

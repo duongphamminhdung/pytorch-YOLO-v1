@@ -74,7 +74,7 @@ print('the batch_size is %d' % (batch_size))
 logfile = open('log.txt', 'w')
 # import pdb; pdb.set_trace()
 num_iter = 0
-best_test_loss = np.inf
+best_test_loss = opt.best_loss
 for epoch in range(num_epochs):
     net.train()
     # optimizer = torch.optim.SGD(net.parameters(),lr=learning_rate*0.1,momentum=0.9,weight_decay=1e-4)
@@ -120,14 +120,15 @@ for epoch in range(num_epochs):
         # validation_loss += loss.data[0]
         validation_loss += loss.data
     # validation_loss /= len(test_loader)
-    
+    logfile.writelines(str(epoch) + '\t' + str(validation_loss) + '\n')  
+    logfile.flush()      
+    if not os.path.isdir('outputs'):
+        os.mkdir("outupts")
+    torch.save(net.state_dict(),'outputs/latest_model.pth')   
     if best_test_loss > validation_loss:
         best_test_loss = validation_loss
         print('Lowest loss %.5f' % best_test_loss)
         # print('Accuracy %.5f' % accuracy)
         torch.save(net.state_dict(),'outputs/best_model_%.5f' % (best_test_loss))
         print("Saved best model")
-    logfile.writelines(str(epoch) + '\t' + str(validation_loss) + '\n')  
-    logfile.flush()      
-    torch.save(net.state_dict(),'outputs/latest_model.pth')    
-
+ 

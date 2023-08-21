@@ -1,6 +1,3 @@
-from pprint import pprint
-
-
 # Default Configs for training
 # NOTE that, config items could be overwriten by passing argument through command line.
 # e.g. --voc-data-dir='./data/'
@@ -26,7 +23,7 @@ class Config:
     debug_file = '/tmp/debugf'
 
     # model
-    load_model_path = '/root/pytorch-YOLO-v1/best_model.pth'
-
+    load_model_path = '/root/pytorch-YOLO-v1/latest_model.pth'
+    best_loss = best_loss
 
 opt = Config()

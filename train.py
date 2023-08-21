@@ -124,7 +124,8 @@ for epoch in range(num_epochs):
     logfile.flush()      
     if not os.path.isdir('outputs'):
         os.mkdir("outupts")
-    torch.save(net.state_dict(),'outputs/latest_model.pth')   
+    torch.save(net.state_dict(),'outputs/latest_model.pth')
+    print(validation_loss) 
     if best_test_loss > validation_loss:
         best_test_loss = validation_loss
         print('Lowest loss %.5f' % best_test_loss)

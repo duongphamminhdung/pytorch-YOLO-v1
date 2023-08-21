@@ -24,6 +24,6 @@ class Config:
 
     # model
     load_model_path = '/root/pytorch-YOLO-v1/latest_model.pth'
-    best_loss = best_loss
+    best_loss = 30
 
 opt = Config()
